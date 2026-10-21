@@ -1,0 +1,20 @@
+# macOS
+.DS_Store
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Credentials
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Logs
+*.log
+
+# Local overrides
+application-local.properties
+application-local.yml
