@@ -24,5 +24,7 @@ public class UpdateTicketTypeRequestDto {
 
   private String description;
 
+  @NotNull(message = "Total available is required")
+  @PositiveOrZero(message = "Total available must be zero or greater")
   private Integer totalAvailable;
 }

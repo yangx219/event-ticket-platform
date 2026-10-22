@@ -3,6 +3,7 @@ package com.devtiro.tickets.controllers;
 import com.devtiro.tickets.domain.dtos.ErrorDto;
 import com.devtiro.tickets.exceptions.EventNotFoundException;
 import com.devtiro.tickets.exceptions.EventUpdateException;
+import com.devtiro.tickets.exceptions.EventValidationException;
 import com.devtiro.tickets.exceptions.QrCodeGenerationException;
 import com.devtiro.tickets.exceptions.QrCodeNotFoundException;
 import com.devtiro.tickets.exceptions.TicketNotFoundException;
@@ -38,8 +39,10 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorDto> handleTicketsSoldOutException(TicketsSoldOutException ex) {
     log.error("Caught TicketsSoldOutException", ex);
     ErrorDto errorDto = new ErrorDto();
-    errorDto.setError("Tickets are sold out for this ticket type");
-    return new ResponseEntity<>(errorDto, HttpStatus.BAD_REQUEST);
+    errorDto.setError(ex.getMessage() != null
+        ? ex.getMessage()
+        : "Tickets are sold out for this ticket type");
+    return new ResponseEntity<>(errorDto, HttpStatus.CONFLICT);
   }
 
   @ExceptionHandler(QrCodeNotFoundException.class)
@@ -63,6 +66,14 @@ public class GlobalExceptionHandler {
     log.error("Caught EventUpdateException", ex);
     ErrorDto errorDto = new ErrorDto();
     errorDto.setError("Unable to update event");
+    return new ResponseEntity<>(errorDto, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(EventValidationException.class)
+  public ResponseEntity<ErrorDto> handleEventValidationException(EventValidationException ex) {
+    log.warn("Event validation failed: {}", ex.getMessage());
+    ErrorDto errorDto = new ErrorDto();
+    errorDto.setError(ex.getMessage());
     return new ResponseEntity<>(errorDto, HttpStatus.BAD_REQUEST);
   }
 

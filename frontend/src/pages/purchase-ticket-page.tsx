@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { purchaseTicket } from "@/lib/api";
-import { CheckCircle, CreditCard } from "lucide-react";
+import { ArrowLeft, CheckCircle, CreditCard, LockKeyhole } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "react-oidc-context";
 import { useNavigate, useParams } from "react-router";
@@ -13,23 +13,26 @@ const PurchaseTicketPage: React.FC = () => {
   const navigate = useNavigate();
   const [error, setError] = useState<string | undefined>();
   const [isPurchaseSuccess, setIsPurchaseASuccess] = useState(false);
+  const [isPurchasing, setIsPurchasing] = useState(false);
 
   useEffect(() => {
     if (!isPurchaseSuccess) {
       return;
     }
     const timer = setTimeout(() => {
-      navigate("/");
+      navigate("/dashboard/tickets");
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, [isPurchaseSuccess]);
+  }, [isPurchaseSuccess, navigate]);
 
   const handlePurchase = async () => {
     if (isLoading || !user?.access_token || !eventId || !ticketTypeId) {
       return;
     }
     try {
+      setError(undefined);
+      setIsPurchasing(true);
       await purchaseTicket(user.access_token, eventId, ticketTypeId);
       setIsPurchaseASuccess(true);
     } catch (err) {
@@ -40,6 +43,8 @@ const PurchaseTicketPage: React.FC = () => {
       } else {
         setError("An unknown error occurred");
       }
+    } finally {
+      setIsPurchasing(false);
     }
   };
 
@@ -55,7 +60,7 @@ const PurchaseTicketPage: React.FC = () => {
                 Your ticket purchase was successful.
               </p>
               <p className="text-gray-600 text-sm">
-                Redirecting to home page in a few seconds...
+                Opening your ticket wallet in a few seconds...
               </p>
             </div>
           </div>
@@ -65,9 +70,17 @@ const PurchaseTicketPage: React.FC = () => {
   }
 
   return (
-    <div className="bg-black min-h-screen text-white">
-      <div className="max-w-md mx-auto py-20">
-        <div className="bg-white border-gray-300 shadow-sm border rounded-lg space-y-4 p-6">
+    <div className="min-h-screen bg-[#050508] px-4 text-white">
+      <div className="mx-auto max-w-md py-12 md:py-20">
+        <button className="mb-6 flex items-center gap-2 text-sm text-gray-400 hover:text-white" onClick={() => navigate(-1)}>
+          <ArrowLeft className="h-4 w-4" /> Back to ticket selection
+        </button>
+        <div className="mb-6">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-400">Demo checkout</p>
+          <h1 className="mt-2 text-3xl font-bold">Complete your booking</h1>
+          <p className="mt-2 text-gray-400">No real payment will be processed.</p>
+        </div>
+        <div className="space-y-5 rounded-2xl border border-gray-800 bg-gray-900 p-7 shadow-2xl">
           {error && (
             <div className="border border-red-200 rounded-lg p-4 bg-red-50">
               <div className="text-red-500 text-sm">
@@ -78,25 +91,25 @@ const PurchaseTicketPage: React.FC = () => {
 
           {/* Credit Card Number */}
           <div className="space-y-2">
-            <Label className="text-gray-600">Credit Card Number</Label>
+                <Label className="text-gray-300">Demo Card Number</Label>
             <div className="relative">
               <Input
                 type="text"
                 placeholder="1234 5678 9012 3456"
                 maxLength={19}
-                className="bg-gray-200 text-black pl-10"
+                className="border-gray-700 bg-gray-950 text-white pl-10"
               />
               <CreditCard className="absolute h-4 w-4 text-gray-400 top-2.5 left-3" />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label className="text-gray-600">Cardholder Name </Label>
+              <Label className="text-gray-300">Cardholder Name</Label>
             <div className="relative">
               <Input
                 type="text"
                 placeholder="John Smith"
-                className="bg-gray-200 text-black pl-10"
+                className="border-gray-700 bg-gray-950 text-white pl-10"
               />
               <CreditCard className="absolute h-4 w-4 text-gray-400 top-2.5 left-3" />
             </div>
@@ -104,15 +117,16 @@ const PurchaseTicketPage: React.FC = () => {
 
           <div className="flex justify-center">
             <Button
-              className="bg-purple-500 hover:bg-purple-800 cursor-pointer"
+              className="h-12 w-full bg-violet-600 font-semibold hover:bg-violet-500 cursor-pointer"
               onClick={handlePurchase}
+              disabled={isLoading || isPurchasing}
             >
-              Purchase Ticket
+              {isPurchasing ? "Purchasing..." : "Purchase Ticket"}
             </Button>
           </div>
 
-          <div className="text-gray-500 text-xs flex items-center justify-center">
-            This is a mock page, no payment details should be entered.
+          <div className="flex items-center justify-center gap-2 text-center text-xs text-gray-500">
+            <LockKeyhole className="h-4 w-4" /> This is a simulation. Never enter real payment details.
           </div>
         </div>
       </div>

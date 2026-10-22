@@ -1,10 +1,11 @@
 import NavBar from "@/components/nav-bar";
 import { SimplePagination } from "@/components/simple-pagination";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { SpringBootPagination, TicketSummary } from "@/domain/domain";
 import { listTickets } from "@/lib/api";
-import { AlertCircle, DollarSign, Tag, Ticket } from "lucide-react";
+import { AlertCircle, ArrowRight, DollarSign, Tag, Ticket } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "react-oidc-context";
 import { Link } from "react-router";
@@ -58,15 +59,29 @@ const DashboardListTickets: React.FC = () => {
       <NavBar />
 
       {/* Title */}
-      <div className="py-8 px-4">
+      <div className="container mx-auto max-w-6xl py-8 px-4">
         <h1 className="text-2xl font-bold">Your Tickets</h1>
         <p>Tickets you have purchased</p>
       </div>
 
-      <div className="max-w-lg mx-auto">
+      {tickets?.empty && (
+        <div className="container mx-auto max-w-2xl px-4 py-20 text-center">
+          <Ticket className="mx-auto mb-5 h-14 w-14 text-violet-400" />
+          <h2 className="text-2xl font-bold">Your ticket wallet is empty</h2>
+          <p className="mx-auto mt-3 max-w-md text-gray-400">
+            Explore upcoming experiences, choose a ticket type and complete the simulated purchase.
+          </p>
+          <Link to="/">
+            <Button className="mt-6 bg-violet-600 hover:bg-violet-500">
+              Browse events <ArrowRight />
+            </Button>
+          </Link>
+        </div>
+      )}
+      <div className="container mx-auto grid max-w-6xl gap-5 px-4 md:grid-cols-2">
         {tickets?.content.map((ticketItem) => (
-          <Link to={`/dashboard/tickets/${ticketItem.id}`}>
-            <Card key={ticketItem.id} className="bg-gray-900 text-white">
+          <Link key={ticketItem.id} to={`/dashboard/tickets/${ticketItem.id}`}>
+            <Card className="h-full border-gray-700 bg-gray-900 text-white transition-colors hover:border-violet-500">
               <CardHeader>
                 <div className="flex justify-between">
                   <div className="flex items-center gap-2">

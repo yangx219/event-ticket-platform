@@ -10,9 +10,13 @@ interface SimplePaginationProps<T> {
 export function SimplePagination<T>({
   pagination,
   onPageChange,
-}: React.FC<SimplePaginationProps<T>>) {
+}: SimplePaginationProps<T>) {
   const currentPage = pagination.number;
   const totalPages = pagination.totalPages;
+
+  if (totalPages <= 1) {
+    return null;
+  }
 
   return (
     <div className="flex gap-2 items-center">

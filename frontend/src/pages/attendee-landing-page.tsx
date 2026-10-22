@@ -2,7 +2,7 @@ import { useAuth } from "react-oidc-context";
 import { Button } from "../components/ui/button";
 import { useNavigate } from "react-router";
 import { Input } from "@/components/ui/input";
-import { AlertCircle, Search } from "lucide-react";
+import { AlertCircle, ArrowRight, Search, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { PublishedEventSummary, SpringBootPagination } from "@/domain/domain";
 import { listPublishedEvents, searchPublishedEvents } from "@/lib/api";
@@ -21,46 +21,34 @@ const AttendeeLandingPage: React.FC = () => {
     SpringBootPagination<PublishedEventSummary> | undefined
   >();
   const [error, setError] = useState<string | undefined>();
-  const [query, setQuery] = useState<string | undefined>();
+  const [query, setQuery] = useState("");
+  const [activeQuery, setActiveQuery] = useState("");
 
   useEffect(() => {
-    if (query && query.length > 0) {
-      queryPublishedEvents();
-    } else {
-      refreshPublishedEvents();
-    }
-  }, [page]);
-
-  const refreshPublishedEvents = async () => {
-    try {
-      setPublishedEvents(await listPublishedEvents(page));
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else if (typeof err === "string") {
-        setError(err);
-      } else {
-        setError("An unknown error has occurred");
+    const loadPublishedEvents = async () => {
+      try {
+        const result = activeQuery
+          ? await searchPublishedEvents(activeQuery, page)
+          : await listPublishedEvents(page);
+        setPublishedEvents(result);
+        setError(undefined);
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else if (typeof err === "string") {
+          setError(err);
+        } else {
+          setError("An unknown error has occurred");
+        }
       }
-    }
-  };
+    };
+    loadPublishedEvents();
+  }, [activeQuery, page]);
 
-  const queryPublishedEvents = async () => {
-    if (!query) {
-      await refreshPublishedEvents();
-    }
-
-    try {
-      setPublishedEvents(await searchPublishedEvents(query, page));
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else if (typeof err === "string") {
-        setError(err);
-      } else {
-        setError("An unknown error has occurred");
-      }
-    }
+  const queryPublishedEvents = () => {
+    const nextQuery = query.trim();
+    setPage(0);
+    setActiveQuery(nextQuery);
   };
 
   if (error) {
@@ -80,14 +68,17 @@ const AttendeeLandingPage: React.FC = () => {
   }
 
   return (
-    <div className="bg-black min-h-screen text-white">
+    <div className="min-h-screen bg-[#050508] text-white">
       {/* Nav */}
-      <div className="flex justify-end p-4 container mx-auto">
+      <div className="container mx-auto flex max-w-7xl items-center justify-between p-4">
+        <div className="text-xl font-bold tracking-tight">
+          Ticket<span className="text-violet-400">Flow</span>
+        </div>
         {isAuthenticated ? (
           <div className="flex gap-4">
             <Button
               onClick={() => navigate("/dashboard")}
-              className="cursor-pointer"
+              className="cursor-pointer bg-violet-600 hover:bg-violet-500"
             >
               Dashboard
             </Button>
@@ -107,20 +98,28 @@ const AttendeeLandingPage: React.FC = () => {
         )}
       </div>
       {/* Hero */}
-      <div className="container mx-auto px-4 mb-8">
-        <div className="bg-[url(/organizers-landing-hero.png)] bg-cover min-h-[200px] rounded-lg bg-bottom md:min-h-[250px]">
-          <div className="bg-black/45 min-h-[200px] md:min-h-[250px] p-15 md:p-20">
-            <h1 className="text-2xl font-bold mb-4">
-              Find Tickets to Your Next Event
+      <div className="container mx-auto max-w-7xl px-4 pb-12 pt-4">
+        <div className="relative min-h-[430px] overflow-hidden rounded-3xl bg-[url(/organizers-landing-hero.png)] bg-cover bg-center">
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/75 to-violet-950/20" />
+          <div className="relative flex min-h-[430px] max-w-3xl flex-col justify-center p-8 md:p-16">
+            <div className="mb-5 flex w-fit items-center gap-2 rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-1 text-sm text-violet-200">
+              <Sparkles className="h-4 w-4" /> Live experiences, unforgettable nights
+            </div>
+            <h1 className="mb-5 text-4xl font-black tracking-tight md:text-6xl">
+              Your next great story starts with a ticket.
             </h1>
-            <div className="flex gap-2 max-w-lg">
+            <p className="mb-8 max-w-xl text-lg text-gray-300">
+              Discover concerts, workshops, festivals and remarkable gatherings across Paris.
+            </p>
+            <div className="flex max-w-2xl gap-2 rounded-2xl border border-white/10 bg-black/50 p-2 backdrop-blur">
               <Input
-                className="bg-white text-black"
+                className="h-12 border-0 bg-white text-black"
+                placeholder="Search by event or venue..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
-              <Button onClick={queryPublishedEvents}>
-                <Search />
+              <Button className="h-12 bg-violet-600 px-6 hover:bg-violet-500" onClick={queryPublishedEvents}>
+                <Search /> <span className="hidden sm:inline">Search</span>
               </Button>
             </div>
           </div>
@@ -128,7 +127,17 @@ const AttendeeLandingPage: React.FC = () => {
       </div>
 
       {/* Published Event Cards */}
-      <div className="grid grid-cols-2 gap-4 px-4 md:grid-cols-4">
+      <section className="container mx-auto max-w-7xl px-4 pb-10">
+        <div className="mb-7 flex items-end justify-between">
+          <div>
+            <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-violet-400">Curated for you</p>
+            <h2 className="text-3xl font-bold">Upcoming experiences</h2>
+          </div>
+          <div className="hidden items-center gap-2 text-sm text-gray-400 sm:flex">
+            {publishedEvents?.totalElements ?? 0} events <ArrowRight className="h-4 w-4" />
+          </div>
+        </div>
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {publishedEvents?.content?.map((publishedEvent) => (
           <PublishedEventCard
             publishedEvent={publishedEvent}
@@ -136,6 +145,15 @@ const AttendeeLandingPage: React.FC = () => {
           />
         ))}
       </div>
+
+      {publishedEvents?.empty && (
+        <div className="container mx-auto px-4 py-16 text-center">
+          <h2 className="text-xl font-semibold">No events found</h2>
+          <p className="mt-2 text-gray-400">
+            Try another search or check back soon for new events.
+          </p>
+        </div>
+      )}
 
       {publishedEvents && (
         <div className="w-full flex justify-center py-8">
@@ -145,6 +163,7 @@ const AttendeeLandingPage: React.FC = () => {
           />{" "}
         </div>
       )}
+      </section>
     </div>
   );
 };

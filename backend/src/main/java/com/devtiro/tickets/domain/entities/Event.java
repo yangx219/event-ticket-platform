@@ -64,7 +64,7 @@ public class Event {
   private EventStatusEnum status;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "organizer_id")
+  @JoinColumn(name = "organizer_id", nullable = false)
   private User organizer;
 
   @ManyToMany(mappedBy = "attendingEvents")

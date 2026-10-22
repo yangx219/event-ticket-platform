@@ -39,11 +39,11 @@ public class QrCode {
   @Enumerated(EnumType.STRING)
   private QrCodeStatusEnum status;
 
-  @Column(name = "value", columnDefinition = "TEXT", nullable = false)
+  @Column(name = "value", columnDefinition = "TEXT", nullable = false, unique = true)
   private String value;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "ticket_id")
+  @JoinColumn(name = "ticket_id", nullable = false)
   private Ticket ticket;
 
   @CreatedDate

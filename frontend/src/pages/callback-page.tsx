@@ -3,7 +3,7 @@ import { useAuth } from "react-oidc-context";
 import { useNavigate } from "react-router";
 
 const CallbackPage: React.FC = () => {
-  const { isLoading, isAuthenticated } = useAuth();
+  const { isLoading, isAuthenticated, error } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -15,13 +15,18 @@ const CallbackPage: React.FC = () => {
       const redirectPath = localStorage.getItem("redirectPath");
       if (redirectPath) {
         localStorage.removeItem("redirectPath");
-        navigate(redirectPath);
       }
+
+      navigate(redirectPath ?? "/", { replace: true });
     }
   }, [isLoading, isAuthenticated, navigate]);
 
   if (isLoading) {
     return <p>Processing login...</p>;
+  }
+
+  if (error) {
+    return <p>Login failed: {error.message}</p>;
   }
 
   return <p>Completing login...</p>;

@@ -1,14 +1,22 @@
-import { useEffect, useState } from "react";
+interface RandomEventImageProps {
+  seed?: string;
+  alt?: string;
+}
 
-const RandomEventImage: React.FC = () => {
-  const [imageSrc, setImageSrc] = useState("");
+const RandomEventImage: React.FC<RandomEventImageProps> = ({
+  seed = "event",
+  alt = "Event",
+}) => {
+  const imageIndex =
+    [...seed].reduce((total, character) => total + character.charCodeAt(0), 0) % 4 + 1;
 
-  useEffect(() => {
-    const randomIndex = Math.floor(Math.random() * 4) + 1;
-    setImageSrc(`/event-image-${randomIndex}.webp`);
-  }, []);
-
-  return <img src={imageSrc} alt="Random Event" className="object-cover" />;
+  return (
+    <img
+      src={`/event-image-${imageIndex}.webp`}
+      alt={alt}
+      className="h-full w-full object-cover"
+    />
+  );
 };
 
 export default RandomEventImage;

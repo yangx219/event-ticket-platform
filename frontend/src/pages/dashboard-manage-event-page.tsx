@@ -181,6 +181,7 @@ const DashboardManageEventPage: React.FC = () => {
   const [eventSalesDateEnabled, setEventSalesDateEnabled] = useState(false);
 
   const [error, setError] = useState<string | undefined>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateField = (field: keyof EventData, value: any) => {
@@ -227,7 +228,7 @@ const DashboardManageEventPage: React.FC = () => {
       };
       fetchEvent();
     }
-  }, [id, user]);
+  }, [id, isEditMode, isLoading, user?.access_token]);
 
   const formatTimeFromDate = (date: Date): string => {
     const hours = date.getHours().toString().padStart(2, "0");
@@ -365,19 +366,63 @@ const DashboardManageEventPage: React.FC = () => {
     setError(undefined);
 
     if (isLoading || !user || !user.access_token) {
-      console.error("User not found!");
+      setError("You must be logged in to save an event");
       return;
     }
 
-    if (isEditMode) {
-      if (!eventData.id) {
-        setError("Event does not have an ID");
-        return;
-      }
-      await handleEventUpdateSubmit(user.access_token, eventData.id);
-    } else {
-      await handleEventCreateSubmit(user.access_token);
+    const dateError = validateEventForm();
+    if (dateError) {
+      setError(dateError);
+      return;
     }
+
+    setIsSubmitting(true);
+
+    try {
+      if (isEditMode) {
+        if (!eventData.id) {
+          setError("Event does not have an ID");
+          return;
+        }
+        await handleEventUpdateSubmit(user.access_token, eventData.id);
+      } else {
+        await handleEventCreateSubmit(user.access_token);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const validateEventForm = (): string | undefined => {
+    if (!eventData.name.trim()) return "Event name is required";
+    if (!eventData.venueDetails.trim()) return "Venue details are required";
+    if (eventData.ticketTypes.length === 0) return "Add at least one ticket type";
+
+    const start = eventData.startDate && eventData.startTime
+      ? combineDateTime(eventData.startDate, eventData.startTime) : undefined;
+    const end = eventData.endDate && eventData.endTime
+      ? combineDateTime(eventData.endDate, eventData.endTime) : undefined;
+    const salesStart = eventData.salesStartDate && eventData.salesStartTime
+      ? combineDateTime(eventData.salesStartDate, eventData.salesStartTime) : undefined;
+    const salesEnd = eventData.salesEndDate && eventData.salesEndTime
+      ? combineDateTime(eventData.salesEndDate, eventData.salesEndTime) : undefined;
+
+    if (eventDateEnabled && (!start || !end)) return "Complete both event dates and times";
+    if (start && end && start >= end) return "Event start must be before event end";
+    if (eventSalesDateEnabled && (!salesStart || !salesEnd)) {
+      return "Complete both sales dates and times";
+    }
+    if (salesStart && salesEnd && salesStart >= salesEnd) {
+      return "Sales start must be before sales end";
+    }
+    if (salesEnd && start && salesEnd > start) {
+      return "Ticket sales must end before the event starts";
+    }
+    if (eventData.status === EventStatusEnum.PUBLISHED
+        && (!start || !end || !salesStart || !salesEnd)) {
+      return "Published events require event and sales dates";
+    }
+    return undefined;
   };
 
   const handleAddTicketType = () => {
@@ -393,6 +438,19 @@ const DashboardManageEventPage: React.FC = () => {
 
   const handleSaveTicketType = () => {
     if (!currentTicketType) {
+      return;
+    }
+    if (!currentTicketType.name.trim()) {
+      setError("Ticket type name is required");
+      return;
+    }
+    if (!Number.isFinite(currentTicketType.price) || currentTicketType.price < 0) {
+      setError("Ticket price must be zero or greater");
+      return;
+    }
+    if (!Number.isInteger(currentTicketType.totalAvailable)
+        || (currentTicketType.totalAvailable ?? -1) < 0) {
+      setError("Ticket availability must be a whole number of zero or greater");
       return;
     }
 
@@ -769,8 +827,8 @@ const DashboardManageEventPage: React.FC = () => {
           )}
 
           <div>
-            <Button onClick={handleFormSubmit}>
-              {isEditMode ? "Update" : "Submit"}
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Saving..." : isEditMode ? "Update" : "Submit"}
             </Button>
           </div>
         </form>

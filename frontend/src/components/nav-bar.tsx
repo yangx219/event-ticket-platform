@@ -8,23 +8,31 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { LogOut } from "lucide-react";
+import { LogOut, ScanLine } from "lucide-react";
 import { useRoles } from "@/hooks/use-roles";
 import { Link } from "react-router";
 
 const NavBar: React.FC = () => {
   const { user, signoutRedirect } = useAuth();
-  const { isOrganizer } = useRoles();
+  const { isOrganizer, isStaff } = useRoles();
 
   return (
-    <div className="bg-gray-950 border-b border-gray-800 text-white">
-      <div className="container mx-auto p-4">
+    <div className="sticky top-0 z-50 border-b border-white/10 bg-gray-950/90 text-white backdrop-blur-xl">
+      <div className="container mx-auto max-w-7xl px-4 py-4">
         <div className="flex justify-between items-center">
           <div className="flex gap-10 md:gap-20 items-center">
-            <h1 className="text-xl font-bold">Event Ticket Platform</h1>
-            <div className="text-gray-300 flex gap-8">
+            <Link to="/" className="text-xl font-bold tracking-tight">
+              Ticket<span className="text-violet-400">Flow</span>
+            </Link>
+            <div className="hidden text-gray-300 sm:flex gap-6">
+              <Link className="hover:text-white" to="/">Discover</Link>
               {isOrganizer && <Link to="/dashboard/events">Events</Link>}
-              <Link to="/dashboard/tickets">Tickets</Link>
+              <Link className="hover:text-white" to="/dashboard/tickets">My Tickets</Link>
+              {isStaff && (
+                <Link className="flex items-center gap-1 hover:text-white" to="/dashboard/validate-qr">
+                  <ScanLine className="h-4 w-4" /> Scan
+                </Link>
+              )}
             </div>
           </div>
 

@@ -141,6 +141,7 @@ export interface PublishedEventTicketTypeDetails {
   name: string;
   price: number;
   description: string;
+  totalAvailable: number;
 }
 
 export interface PublishedEventDetails {

@@ -33,7 +33,7 @@ import {
   Tag,
   Trash,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "react-oidc-context";
 import { Link } from "react-router";
 
@@ -53,14 +53,7 @@ const DashboardListEventsPage: React.FC = () => {
     EventSummary | undefined
   >();
 
-  useEffect(() => {
-    if (isLoading || !user?.access_token) {
-      return;
-    }
-    refreshEvents(user.access_token);
-  }, [isLoading, user, page]);
-
-  const refreshEvents = async (accessToken: string) => {
+  const refreshEvents = useCallback(async (accessToken: string) => {
     try {
       setEvents(await listEvents(accessToken, page));
     } catch (err) {
@@ -72,7 +65,14 @@ const DashboardListEventsPage: React.FC = () => {
         setError("An unknown error has occurred");
       }
     }
-  };
+  }, [page]);
+
+  useEffect(() => {
+    if (isLoading || !user?.access_token) {
+      return;
+    }
+    refreshEvents(user.access_token);
+  }, [isLoading, user?.access_token, refreshEvents]);
 
   const formatDate = (date?: Date) => {
     if (!date) {
@@ -160,12 +160,16 @@ const DashboardListEventsPage: React.FC = () => {
     <div className="bg-black min-h-screen text-white">
       <NavBar />
 
-      <div className="max-w-lg mx-auto px-4">
+      <main className="container mx-auto max-w-7xl px-4 pb-10">
         {/* Title */}
-        <div className="py-8 px-4 flex justify-between">
+        <div className="py-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold">Your Events</h1>
-            <p>Events you have created</p>
+            <p className="text-gray-400">
+              {events
+                ? `${events.totalElements} event${events.totalElements === 1 ? "" : "s"} created`
+                : "Loading your events..."}
+            </p>
           </div>
           <div>
             <Link to="/dashboard/events/create">
@@ -177,9 +181,20 @@ const DashboardListEventsPage: React.FC = () => {
         </div>
 
         {/* Event Cards */}
-        <div className="space-y-2">
+        {events?.empty ? (
+          <div className="rounded-xl border border-dashed border-gray-700 py-20 text-center">
+            <h2 className="text-xl font-semibold">No events yet</h2>
+            <p className="mt-2 text-gray-400">
+              Create your first event to start selling tickets.
+            </p>
+          </div>
+        ) : (
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {events?.content.map((eventItem) => (
-            <Card className="bg-gray-900 border-gray-700 text-white">
+            <Card
+              key={eventItem.id}
+              className="flex h-full flex-col bg-gray-900 border-gray-700 text-white transition-colors hover:border-purple-600"
+            >
               <CardHeader>
                 <div className="flex justify-between">
                   <h3 className="font-bold text-xl">{eventItem.name}</h3>
@@ -240,7 +255,7 @@ const DashboardListEventsPage: React.FC = () => {
                   </div>
                 </div>
               </CardContent>
-              <CardFooter className="flex justify-end gap-2">
+              <CardFooter className="mt-auto flex justify-end gap-2">
                 <Link to={`/dashboard/events/update/${eventItem.id}`}>
                   <Button
                     type="button"
@@ -260,12 +275,20 @@ const DashboardListEventsPage: React.FC = () => {
             </Card>
           ))}
         </div>
-      </div>
-      <div className="flex justify-center py-8">
+        )}
+      <div className="flex flex-col items-center gap-2 py-8">
         {events && (
-          <SimplePagination pagination={events} onPageChange={setPage} />
+          <>
+            <SimplePagination pagination={events} onPageChange={setPage} />
+            {events.totalPages > 1 && (
+              <p className="text-xs text-gray-500">
+                Showing {events.numberOfElements} of {events.totalElements} events
+              </p>
+            )}
+          </>
         )}
       </div>
+      </main>
       <AlertDialog open={dialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

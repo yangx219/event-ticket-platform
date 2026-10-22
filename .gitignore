@@ -18,3 +18,8 @@
 # Local overrides
 application-local.properties
 application-local.yml
+
+# Local-only personal study notes (never commit or push)
+/CODEX_TASK_EVENT_TICKET.md
+/docs/PROJECT_STUDY_INTERVIEW_GUIDE_ZH.md
+/docs/AI_APPLICATION_ENGINEER_ROADMAP_ZH.md

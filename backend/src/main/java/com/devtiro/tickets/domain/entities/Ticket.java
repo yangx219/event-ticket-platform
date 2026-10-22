@@ -45,11 +45,11 @@ public class Ticket {
   private TicketStatusEnum status;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "ticket_type_id")
+  @JoinColumn(name = "ticket_type_id", nullable = false)
   private TicketType ticketType;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "purchaser_id")
+  @JoinColumn(name = "purchaser_id", nullable = false)
   private User purchaser;
 
   @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL)

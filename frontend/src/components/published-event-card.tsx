@@ -1,6 +1,6 @@
 import { PublishedEventSummary } from "@/domain/domain";
 import { Card } from "./ui/card";
-import { Calendar, Heart, MapPin, Share2 } from "lucide-react";
+import { ArrowRight, Calendar, MapPin } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "react-router";
 import RandomEventImage from "./random-event-image";
@@ -13,23 +13,27 @@ const PublishedEventCard: React.FC<PublishedEventCardProperties> = ({
   publishedEvent,
 }) => {
   return (
-    <Link to={`/events/${publishedEvent.id}`}>
-      <Card className="py-0 overflow-hidden max-w-[240px] gap-2">
+    <Link className="group block h-full" to={`/events/${publishedEvent.id}`}>
+      <Card className="h-full overflow-hidden border-gray-800 bg-gray-950 py-0 text-white transition-all duration-300 hover:-translate-y-1 hover:border-violet-500 hover:shadow-2xl hover:shadow-violet-950/40">
         {/* Card Image */}
-        <div className="h-[140px]">
-          <RandomEventImage />
+        <div className="relative h-48 overflow-hidden">
+          <RandomEventImage seed={publishedEvent.id} alt={publishedEvent.name} />
+          <div className="absolute inset-0 bg-gradient-to-t from-gray-950/70 to-transparent" />
+          <span className="absolute bottom-3 left-3 rounded-full bg-violet-500/90 px-3 py-1 text-xs font-semibold">
+            Tickets available
+          </span>
         </div>
-        <div className="px-2">
-          <h3 className="text-lg font-medium">{publishedEvent.name}</h3>
-        </div>
-        <div className="px-2">
-          <div className="flex gap-2 text-sm mb-2 text-gray-500">
-            <MapPin className="w-5" /> {publishedEvent.venue}
+        <div className="flex flex-1 flex-col p-5">
+          <h3 className="mb-4 text-xl font-semibold leading-tight group-hover:text-violet-300">
+            {publishedEvent.name}
+          </h3>
+          <div className="flex gap-2 text-sm mb-3 text-gray-400">
+            <MapPin className="h-5 w-5 shrink-0 text-violet-400" /> {publishedEvent.venue}
           </div>
-          <div className="flex gap-2 text-sm mb-2 text-gray-500">
+          <div className="flex gap-2 text-sm text-gray-400">
             {publishedEvent.start && publishedEvent.end ? (
               <div className="flex gap-2">
-                <Calendar className="w-5" />{" "}
+                <Calendar className="h-5 w-5 shrink-0 text-violet-400" />{" "}
                 {format(publishedEvent.start, "PP")} -{" "}
                 {format(publishedEvent.end, "PP")}
               </div>
@@ -40,13 +44,9 @@ const PublishedEventCard: React.FC<PublishedEventCardProperties> = ({
               </div>
             )}
           </div>
-          <div className="flex justify-between p-2 border-t text-gray-500">
-            <button className="cursor-pointer">
-              <Heart />
-            </button>
-            <button className="cursor-pointer">
-              <Share2 />
-            </button>
+          <div className="mt-5 flex items-center justify-between border-t border-gray-800 pt-4 font-semibold text-violet-300">
+            <span>View tickets</span>
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </div>
         </div>
       </Card>

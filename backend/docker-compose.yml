@@ -2,7 +2,7 @@ services:
   db:
     image: postgres:17
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:5433:5432"
     restart: unless-stopped
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD:-changemeinprod!}

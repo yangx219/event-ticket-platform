@@ -9,6 +9,7 @@ import com.devtiro.tickets.domain.entities.TicketType;
 import com.devtiro.tickets.domain.entities.User;
 import com.devtiro.tickets.exceptions.EventNotFoundException;
 import com.devtiro.tickets.exceptions.EventUpdateException;
+import com.devtiro.tickets.exceptions.EventValidationException;
 import com.devtiro.tickets.exceptions.TicketTypeNotFoundException;
 import com.devtiro.tickets.exceptions.UserNotFoundException;
 import com.devtiro.tickets.repositories.EventRepository;
@@ -16,6 +17,7 @@ import com.devtiro.tickets.repositories.UserRepository;
 import com.devtiro.tickets.services.EventService;
 import jakarta.transaction.Transactional;
 import java.util.List;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -38,6 +40,8 @@ public class EventServiceImpl implements EventService {
   @Override
   @Transactional
   public Event createEvent(UUID organizerId, CreateEventRequest event) {
+    validateEventDates(event.getStart(), event.getEnd(), event.getSalesStart(),
+        event.getSalesEnd(), event.getStatus());
     User organizer = userRepository.findById(organizerId)
         .orElseThrow(() -> new UserNotFoundException(
             String.format("User with ID '%s' not found", organizerId))
@@ -82,6 +86,8 @@ public class EventServiceImpl implements EventService {
   @Override
   @Transactional
   public Event updateEventForOrganizer(UUID organizerId, UUID id, UpdateEventRequest event) {
+    validateEventDates(event.getStart(), event.getEnd(), event.getSalesStart(),
+        event.getSalesEnd(), event.getStatus());
     if (null == event.getId()) {
       throw new EventUpdateException("Event ID cannot be null");
     }
@@ -164,6 +170,34 @@ public class EventServiceImpl implements EventService {
   @Override
   public Optional<Event> getPublishedEvent(UUID id) {
     return eventRepository.findByIdAndStatus(id, EventStatusEnum.PUBLISHED);
+  }
+
+  private void validateEventDates(
+      LocalDateTime start,
+      LocalDateTime end,
+      LocalDateTime salesStart,
+      LocalDateTime salesEnd,
+      EventStatusEnum status) {
+    if ((start == null) != (end == null)) {
+      throw new EventValidationException("Event start and end must both be provided");
+    }
+    if (start != null && !start.isBefore(end)) {
+      throw new EventValidationException("Event start must be before event end");
+    }
+    if ((salesStart == null) != (salesEnd == null)) {
+      throw new EventValidationException("Sales start and end must both be provided");
+    }
+    if (salesStart != null && !salesStart.isBefore(salesEnd)) {
+      throw new EventValidationException("Sales start must be before sales end");
+    }
+    if (salesEnd != null && start != null && salesEnd.isAfter(start)) {
+      throw new EventValidationException("Ticket sales must end before the event starts");
+    }
+    if (EventStatusEnum.PUBLISHED.equals(status)
+        && (start == null || salesStart == null)) {
+      throw new EventValidationException(
+          "Published events require event dates and ticket sales dates");
+    }
   }
 
 

@@ -20,13 +20,15 @@ const DashboardViewTicketPage: React.FC = () => {
       return;
     }
 
+    let createdQrCodeUrl: string | undefined;
     const doUseEffect = async (accessToken: string, id: string) => {
       try {
         setIsQrCodeLoading(true);
         setError(undefined);
 
         setTicket(await getTicket(accessToken, id));
-        setQrCodeUrl(URL.createObjectURL(await getTicketQr(accessToken, id)));
+        createdQrCodeUrl = URL.createObjectURL(await getTicketQr(accessToken, id));
+        setQrCodeUrl(createdQrCodeUrl);
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
@@ -43,8 +45,8 @@ const DashboardViewTicketPage: React.FC = () => {
     doUseEffect(user?.access_token, id);
 
     return () => {
-      if (qrCodeUrl) {
-        URL.revokeObjectURL(qrCodeUrl);
+      if (createdQrCodeUrl) {
+        URL.revokeObjectURL(createdQrCodeUrl);
       }
     };
   }, [user?.access_token, isLoading, id]);
