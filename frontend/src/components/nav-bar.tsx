@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { LogOut, ScanLine } from "lucide-react";
+import { ClipboardList, LogOut, ScanLine } from "lucide-react";
 import { useRoles } from "@/hooks/use-roles";
 import { Link } from "react-router";
 
@@ -22,12 +22,15 @@ const NavBar: React.FC = () => {
         <div className="flex justify-between items-center">
           <div className="flex gap-10 md:gap-20 items-center">
             <Link to="/" className="text-xl font-bold tracking-tight">
-              Ticket<span className="text-violet-400">Flow</span>
+              Event<span className="text-violet-400">Pilot</span>
             </Link>
             <div className="hidden text-gray-300 sm:flex gap-6">
               <Link className="hover:text-white" to="/">Discover</Link>
               {isOrganizer && <Link to="/dashboard/events">Events</Link>}
               <Link className="hover:text-white" to="/dashboard/tickets">My Tickets</Link>
+              <Link className="flex items-center gap-1 hover:text-white" to="/dashboard/orders">
+                <ClipboardList className="h-4 w-4" /> My Orders
+              </Link>
               {isStaff && (
                 <Link className="flex items-center gap-1 hover:text-white" to="/dashboard/validate-qr">
                   <ScanLine className="h-4 w-4" /> Scan

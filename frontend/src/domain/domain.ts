@@ -19,6 +19,21 @@ export enum EventStatusEnum {
   COMPLETED = "COMPLETED",
 }
 
+export interface GenerateEventCopyRequest {
+  brief: string;
+  audience?: string;
+  tone?: string;
+  language?: string;
+}
+
+export interface GeneratedEventCopy {
+  eventName: string;
+  venueDescription: string;
+  ticketTypeName: string;
+  ticketDescription: string;
+  tags: string[];
+}
+
 export interface CreateTicketTypeRequest {
   name: string;
   price: number;
@@ -200,4 +215,55 @@ export interface TicketValidationRequest {
 export interface TicketValidationResponse {
   ticketId: string;
   status: TicketValidationStatus;
+}
+
+export enum OrderStatus {
+  PENDING = "PENDING",
+  PAID = "PAID",
+  CANCELLED = "CANCELLED",
+  REFUNDED = "REFUNDED",
+}
+
+export enum PaymentStatus {
+  PENDING = "PENDING",
+  SUCCEEDED = "SUCCEEDED",
+  FAILED = "FAILED",
+}
+
+export interface CreateOrderRequest {
+  eventId: string;
+  ticketTypeId: string;
+  quantity: number;
+}
+
+export interface OrderItemSummary {
+  id: string;
+  ticketTypeId: string;
+  ticketName: string;
+  unitPrice: number;
+  quantity: number;
+  lineTotal: number;
+  ticketIds: string[];
+}
+
+export interface PaymentSummary {
+  id: string;
+  status: PaymentStatus;
+  amount: number;
+  currency: string;
+  provider: "MOCK";
+  providerReference: string;
+  createdAt: string;
+}
+
+export interface OrderSummary {
+  id: string;
+  status: OrderStatus;
+  totalAmount: number;
+  currency: string;
+  idempotencyKey: string;
+  items: OrderItemSummary[];
+  payments: PaymentSummary[];
+  createdAt: string;
+  updatedAt: string;
 }

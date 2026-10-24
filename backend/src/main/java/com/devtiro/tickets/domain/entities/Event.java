@@ -68,12 +68,15 @@ public class Event {
   private User organizer;
 
   @ManyToMany(mappedBy = "attendingEvents")
+  @Builder.Default
   private List<User> attendees = new ArrayList<>();
 
   @ManyToMany(mappedBy = "staffingEvents")
+  @Builder.Default
   private List<User> staff = new ArrayList<>();
 
   @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+  @Builder.Default
   private List<TicketType> ticketTypes = new ArrayList<>();
 
   @CreatedDate

@@ -2,16 +2,40 @@ import {
   CreateEventRequest,
   EventDetails,
   EventSummary,
+  CreateOrderRequest,
   isErrorResponse,
   PublishedEventDetails,
   PublishedEventSummary,
+  OrderSummary,
   SpringBootPagination,
   TicketDetails,
   TicketSummary,
   TicketValidationRequest,
   TicketValidationResponse,
   UpdateEventRequest,
+  GenerateEventCopyRequest,
+  GeneratedEventCopy,
 } from "@/domain/domain";
+
+export const generateEventCopy = async (
+  accessToken: string,
+  request: GenerateEventCopyRequest,
+): Promise<GeneratedEventCopy> => {
+  const response = await fetch("/api/v1/ai/event-copy", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(request),
+  });
+  const responseBody: unknown = await response.json();
+  if (!response.ok) {
+    if (isErrorResponse(responseBody)) throw new Error(responseBody.error);
+    throw new Error("AI copy generation failed");
+  }
+  return responseBody as GeneratedEventCopy;
+};
 
 export const createEvent = async (
   accessToken: string,
@@ -240,6 +264,48 @@ export const purchaseTicket = async (
       throw new Error("An unknown error occurred");
     }
   }
+};
+
+export const createOrder = async (
+  accessToken: string,
+  idempotencyKey: string,
+  request: CreateOrderRequest,
+): Promise<OrderSummary> => {
+  const response = await fetch("/api/v1/orders", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+      "Idempotency-Key": idempotencyKey,
+    },
+    body: JSON.stringify(request),
+  });
+  const responseBody: unknown = await response.json();
+  if (!response.ok) {
+    if (isErrorResponse(responseBody)) {
+      throw new Error(responseBody.error);
+    }
+    throw new Error("Unable to create order");
+  }
+  return responseBody as OrderSummary;
+};
+
+export const listOrders = async (
+  accessToken: string,
+  page: number,
+): Promise<SpringBootPagination<OrderSummary>> => {
+  const response = await fetch(
+    `/api/v1/orders?page=${page}&size=8&sort=createdAt,desc`,
+    { headers: { Authorization: `Bearer ${accessToken}` } },
+  );
+  const responseBody: unknown = await response.json();
+  if (!response.ok) {
+    if (isErrorResponse(responseBody)) {
+      throw new Error(responseBody.error);
+    }
+    throw new Error("Unable to load orders");
+  }
+  return responseBody as SpringBootPagination<OrderSummary>;
 };
 
 export const listTickets = async (

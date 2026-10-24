@@ -2,7 +2,7 @@ import { useAuth } from "react-oidc-context";
 import { Button } from "../components/ui/button";
 import { useNavigate } from "react-router";
 import { Input } from "@/components/ui/input";
-import { AlertCircle, ArrowRight, Search, Sparkles } from "lucide-react";
+import { AlertCircle, ArrowRight, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { PublishedEventSummary, SpringBootPagination } from "@/domain/domain";
 import { listPublishedEvents, searchPublishedEvents } from "@/lib/api";
@@ -72,7 +72,7 @@ const AttendeeLandingPage: React.FC = () => {
       {/* Nav */}
       <div className="container mx-auto flex max-w-7xl items-center justify-between p-4">
         <div className="text-xl font-bold tracking-tight">
-          Ticket<span className="text-violet-400">Flow</span>
+          Event<span className="text-violet-400">Pilot</span>
         </div>
         {isAuthenticated ? (
           <div className="flex gap-4">
@@ -102,8 +102,8 @@ const AttendeeLandingPage: React.FC = () => {
         <div className="relative min-h-[430px] overflow-hidden rounded-3xl bg-[url(/organizers-landing-hero.png)] bg-cover bg-center">
           <div className="absolute inset-0 bg-gradient-to-r from-black via-black/75 to-violet-950/20" />
           <div className="relative flex min-h-[430px] max-w-3xl flex-col justify-center p-8 md:p-16">
-            <div className="mb-5 flex w-fit items-center gap-2 rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-1 text-sm text-violet-200">
-              <Sparkles className="h-4 w-4" /> Live experiences, unforgettable nights
+            <div className="mb-5 w-fit rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-1 text-sm font-medium text-violet-200">
+              Events across Paris
             </div>
             <h1 className="mb-5 text-4xl font-black tracking-tight md:text-6xl">
               Your next great story starts with a ticket.

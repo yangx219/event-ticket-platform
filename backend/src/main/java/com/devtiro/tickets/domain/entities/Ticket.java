@@ -52,10 +52,16 @@ public class Ticket {
   @JoinColumn(name = "purchaser_id", nullable = false)
   private User purchaser;
 
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "order_item_id")
+  private OrderItem orderItem;
+
   @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL)
+  @Builder.Default
   private List<TicketValidation> validations = new ArrayList<>();
 
   @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL)
+  @Builder.Default
   private List<QrCode> qrCodes = new ArrayList<>();
 
   @CreatedDate

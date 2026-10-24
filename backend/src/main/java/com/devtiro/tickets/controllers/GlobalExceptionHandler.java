@@ -4,6 +4,10 @@ import com.devtiro.tickets.domain.dtos.ErrorDto;
 import com.devtiro.tickets.exceptions.EventNotFoundException;
 import com.devtiro.tickets.exceptions.EventUpdateException;
 import com.devtiro.tickets.exceptions.EventValidationException;
+import com.devtiro.tickets.exceptions.OrderConflictException;
+import com.devtiro.tickets.exceptions.OrderNotFoundException;
+import com.devtiro.tickets.exceptions.AiServiceException;
+import com.devtiro.tickets.exceptions.AiRateLimitException;
 import com.devtiro.tickets.exceptions.QrCodeGenerationException;
 import com.devtiro.tickets.exceptions.QrCodeNotFoundException;
 import com.devtiro.tickets.exceptions.TicketNotFoundException;
@@ -18,12 +22,40 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+
+  @ExceptionHandler(OrderNotFoundException.class)
+  public ResponseEntity<ErrorDto> handleOrderNotFoundException(OrderNotFoundException ex) {
+    log.warn("Order not found: {}", ex.getMessage());
+    ErrorDto errorDto = new ErrorDto();
+    errorDto.setError("Order not found");
+    return new ResponseEntity<>(errorDto, HttpStatus.NOT_FOUND);
+  }
+
+  @ExceptionHandler(OrderConflictException.class)
+  public ResponseEntity<ErrorDto> handleOrderConflictException(OrderConflictException ex) {
+    log.warn("Order conflict: {}", ex.getMessage());
+    ErrorDto errorDto = new ErrorDto();
+    errorDto.setError(ex.getMessage());
+    return new ResponseEntity<>(errorDto, HttpStatus.CONFLICT);
+  }
+
+  @ExceptionHandler(AiServiceException.class)
+  public ResponseEntity<ErrorDto> handleAiServiceException(AiServiceException ex) {
+    return new ResponseEntity<>(new ErrorDto(ex.getMessage()), HttpStatus.SERVICE_UNAVAILABLE);
+  }
+
+  @ExceptionHandler(AiRateLimitException.class)
+  public ResponseEntity<ErrorDto> handleAiRateLimitException(AiRateLimitException ex) {
+    return new ResponseEntity<>(new ErrorDto(ex.getMessage()), HttpStatus.TOO_MANY_REQUESTS);
+  }
 
 
   @ExceptionHandler(TicketNotFoundException.class)
@@ -135,6 +167,26 @@ public class GlobalExceptionHandler {
         ).orElse("Constraint violation occurred");
 
     errorDto.setError(errorMessage);
+    return new ResponseEntity<>(errorDto, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(MissingRequestHeaderException.class)
+  public ResponseEntity<ErrorDto> handleMissingRequestHeader(
+      MissingRequestHeaderException ex
+  ) {
+    log.warn("Missing request header: {}", ex.getHeaderName());
+    ErrorDto errorDto = new ErrorDto();
+    errorDto.setError(ex.getHeaderName() + " header is required");
+    return new ResponseEntity<>(errorDto, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(HandlerMethodValidationException.class)
+  public ResponseEntity<ErrorDto> handleHandlerMethodValidation(
+      HandlerMethodValidationException ex
+  ) {
+    log.warn("Request parameter validation failed: {}", ex.getMessage());
+    ErrorDto errorDto = new ErrorDto();
+    errorDto.setError("Request parameter validation failed");
     return new ResponseEntity<>(errorDto, HttpStatus.BAD_REQUEST);
   }
 
